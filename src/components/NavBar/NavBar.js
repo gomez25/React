@@ -12,11 +12,10 @@ export default function NavBar() {
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse id="responsive-navbar-nav">
             <Nav className="me-auto">
-              <Nav.Link href="#features">Features</Nav.Link>
-              <Nav.Link href="#pricing">Pricing</Nav.Link>
+              <Nav.Link href={`/catalog`}>Catalog</Nav.Link>
             </Nav>
             <Nav>
-              <Nav.Link eventKey={2} href="cart">
+              <Nav.Link eventKey={2} href="#memes">
               <Cart count={0}/>
               </Nav.Link>
             </Nav>
