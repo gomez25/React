@@ -20,11 +20,7 @@ export default function ItemListContainer({ title }) {
         {data.map((product) => (
           <CardItem
             key={product.id}
-            productId={product.id}
-            title={product.name}
-            image={product.image}
-            price={product.price}
-            stock={product.stock}
+            data={product}
             initial={1}
           />
         ))}

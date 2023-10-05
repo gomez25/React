@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { fetchData } from '../../util';
+import { useParams } from 'react-router-dom';
 
-export default function ItemDetailContainer({ productId }) {
+export default function ItemDetailContainer() {
+    const {id} = useParams();
     const [data, setData] = useState({});
     useEffect(() => {
-        fetchData(`https://651d953d44e393af2d5a0ac8.mockapi.io/api/v1/catalog/${1}`)
+        fetchData(`https://651d953d44e393af2d5a0ac8.mockapi.io/api/v1/catalog/${id}`)
             .then((response) => {
                 setData(response);
             })
             .catch((error) => {
                 console.error(error);
             });
-    }, [productId]);
+    }, [id]);
     
     return (
         <article className='CartItem'>
