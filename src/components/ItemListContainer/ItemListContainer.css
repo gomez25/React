@@ -1,0 +1,12 @@
+@media (min-width: 1080px) {
+    .product-list {
+        display: flex;
+        justify-content: space-around;
+    }
+}
+
+@media (min-width: 0px) and (max-width: 1079px){
+    .product-list {
+        align-items: center;
+    }
+}

@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useContext } from 'react';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import Cart from '../CartWidget/CartWidget'
+import CartWidget from '../CartWidget/CartWidget'
+import { useCart } from '../../context/CartContext';
 
 export default function NavBar() {
+  const { cartCount } = useCart(); 
     return (
         <Navbar collapseOnSelect expand="lg" className="bg-body-tertiary">
         <Container>
@@ -15,8 +17,8 @@ export default function NavBar() {
               <Nav.Link href={`/catalog`}>Catalog</Nav.Link>
             </Nav>
             <Nav>
-              <Nav.Link eventKey={2} href="#memes">
-              <Cart count={0}/>
+              <Nav.Link eventKey={2} href="/cart">
+              <CartWidget count={cartCount}/>
               </Nav.Link>
             </Nav>
           </Navbar.Collapse>

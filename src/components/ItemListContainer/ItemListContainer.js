@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import CardItem from '../CardItem/CardItem';
-import { fetchData } from '../../util';
+import './ItemListContainer.css'
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../..'
+
 export default function ItemListContainer({ title }) {
   const [data, setData] = useState([]);
 
+  const llamadaDb = () => {
+    const itemsCollection = collection(db, "catalog")
+    getDocs(itemsCollection).then((res) => {
+      let items = res.docs.map((item => ({ ...item.data() })))
+      setData(items)
+      console.log(items)
+    })
+  }
+  
   useEffect(() => {
-    fetchData('https://651d953d44e393af2d5a0ac8.mockapi.io/api/v1/catalog')
-      .then((response) => {
-        setData(response);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    llamadaDb();
   }, []);
   return (
     <div>

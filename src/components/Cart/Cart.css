@@ -1,0 +1,9 @@
+.product-list{
+    display: block;
+}
+.checkoutButton{
+    width: 100%;
+}
+.checkoutContainer{
+    align-content: right;
+}

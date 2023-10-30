@@ -1,0 +1,10 @@
+@media (min-width: 1080px) {
+    .CardImg {
+        height: 250px;
+        width: 250px;
+    }
+
+    .item {
+        margin: 5px;
+    }
+}
