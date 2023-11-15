@@ -1,42 +1,57 @@
-import React, { useState, useEffect } from 'react';
-import './Cart.css'
-import CartItem from '../CartItem/CartItem'
+import React, { useState, useEffect, useContext } from 'react';
+import './Cart.css';
+import CartItem from '../CartItem/CartItem';
 import Button from 'react-bootstrap/Button';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../..'
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { db } from '../..';
+import { CartContext } from '../../context/CartContext';
 
 export default function Cart() {
-    const [data, setData] = useState([]);
+  const [data, setData] = useState([]);
+  const { removeItem } = useContext(CartContext);
 
-    const llamadaDb = () => {
-      const itemsCollection = collection(db, "cart")
-      getDocs(itemsCollection).then((res) => {
-        let items = res.docs.map((item => ({ ...item.data() })))
-        setData(items)
-        console.log(items)
-      })
+  const fetchCartData = async () => {
+    const itemsCollection = collection(db, 'cart');
+    const querySnapshot = await getDocs(itemsCollection);
+    const items = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+    setData(items);
+  };
+
+  useEffect(() => {
+    fetchCartData();
+  }, []);
+
+  const handleRemoveItem = async (itemId) => {
+    try {
+      const cartItemRef = doc(db, 'cart', itemId);
+      await deleteDoc(cartItemRef);
+      removeItem(itemId);
+      setData((prevData) => prevData.filter((item) => item.id !== itemId));
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
     }
-  
-    useEffect(() => {
-      llamadaDb();
-    }, []);
-    return (
-      <>
+  };
+
+  // Calculate subtotal, tax, and total
+  const subtotal = data.reduce((acc, item) => acc + item.subtotal, 0);
+  const tax = subtotal * 0.13;
+  const total = subtotal + tax;
+
+  return (
+    <>
       <div className="product-list">
         {data.map((product) => (
-          <CartItem
-            key={product.id}
-            data={product}
-          />
+          <CartItem key={product.id} data={product} onRemove={handleRemoveItem} />
         ))}
       </div>
-      <div className='checkoutContainer'>
-        <p>Subtotal {data.subtotal}</p>
-        <p>Tax 13%</p>
-        <p>Total {data.total}</p>
+      <div className="checkoutContainer">
+        <p>Subtotal: ${subtotal.toFixed(2)}</p>
+        <p>Tax (13%): ${tax.toFixed(2)}</p>
+        <p>Total: ${total.toFixed(2)}</p>
       </div>
-      <Button className='checkoutButton' variant="success" href='/checkout'> Checkout </Button>
-      </>
-        
-    )
+      <Button className="checkoutButton" variant="success" href="/checkout">
+        Checkout
+      </Button>
+    </>
+  );
 }

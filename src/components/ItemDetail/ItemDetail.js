@@ -1,30 +1,29 @@
-import { useState } from 'react'
+import { useState } from 'react';
 import React, { useContext } from 'react';
 import Button from 'react-bootstrap/Button';
 import CartAdd from '../CartAdd/CartAdd';
 import Counter from '../Counter/Counter';
-import { db } from '../..'
-import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../..';
+import { collection, addDoc, doc } from 'firebase/firestore';
 import { CartContext, useCart } from '../../context/CartContext';
 
 export default function ItemDetail({ id, name, img, category, description, price, stock }) {
 
     const [quantity, setQuantity] = useState(1);
-    const [quantityAdded, setQuantityAdded] = useState(0)
+    const [quantityAdded, setQuantityAdded] = useState(0);
     const { incrementCartCount } = useCart();
-    const { addItem } = useContext(CartContext)
+    const { addItem } = useContext(CartContext);
 
-    const handleOnAdd = (quantity) => {
-
+    const handleOnAdd = async (quantity) => {
         incrementCartCount(quantity);
-        setQuantityAdded(quantity)
+        setQuantityAdded(quantity);
 
         if (quantity > 0) {
-
             const subtotal = price * quantity;
             const total = subtotal * 0.13 + subtotal;
 
             const cartItem = {
+                id: doc().id,   
                 name: name,
                 price: price,
                 quantity: quantity,
@@ -32,12 +31,17 @@ export default function ItemDetail({ id, name, img, category, description, price
                 total: total,
             };
 
-            const cartCollection = collection(db, "cart")
-            addDoc(cartCollection, cartItem, data.id);
+            try {
+                const cartCollection = collection(db, "cart");
+                await addDoc(cartCollection, cartItem);
 
-            addItem(cartItem, quantity);
+                addItem(cartItem, quantity);
+            } catch (error) {
+                console.error('Error adding item to cart:', error);
+            }
         }
     }
+
     return (
         <article className='CardItem'>
             <header className='Header'>
@@ -84,5 +88,5 @@ export default function ItemDetail({ id, name, img, category, description, price
                 }
             </footer>
         </article>
-    )
+    );
 }

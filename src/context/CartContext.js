@@ -1,6 +1,6 @@
-import { createContext, useState, useContext } from "react";
-import { db } from '../.'
-import { doc, updateDoc, getDoc  } from 'firebase/firestore';
+import { createContext, useState, useContext, useEffect } from "react";
+import { db } from '../.';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 
 export const CartContext = createContext();
 
@@ -9,66 +9,64 @@ export const useCart = () => {
 };
 
 export const CartProvider = ({ children }) => {
-    const [cart, setCart] = useState([])
-    const [cartCount, setCartCount] = useState(0); 
+  const [cart, setCart] = useState([]);
+  const [cartCount, setCartCount] = useState(0);
 
-    const addItem = (item, quantity) => {
-        if(!isInCart(item.id)){
-            setCart(prev => [...prev, {...item, quantity}])
-            incrementCartCount(cartCount + quantity);
-        }else{
-            console.error('Item is already added')
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      try {
+        const CartWidgetDocument = doc(db, 'cartwidget', 'lS4hl9eFiCzpDj3aBgAa');
+        const docSnapshot = await getDoc(CartWidgetDocument);
+
+        if (docSnapshot.exists()) {
+          const count = docSnapshot.data().count;
+          setCartCount(count);
+        } else {
+          console.log('Document does not exist');
         }
-    }
-    const CartWidgetCount = async () => {
-        try {
-          const CartWidgetDocument = doc(db, 'cartwidget', 'lS4hl9eFiCzpDj3aBgAa');
-          const docSnapshot = await getDoc(CartWidgetDocument);
-          
-          if (docSnapshot.exists()) {
-            const count = docSnapshot.data().count;
-            cartCount = count;
-            return count;
-          } else {
-            console.log('Document does not exist');
-            return 0;
-          }
-        } catch (error) {
-          console.error('Error getting document:', error);
-          return 0; 
-        }
+      } catch (error) {
+        console.error('Error getting document:', error);
       }
-    const incrementCartCount = (count) => {
-        const CartWidgetDocument = doc(db,"cartwidget", "lS4hl9eFiCzpDj3aBgAa");
-        const newValue = cartCount + count;
-        updateDoc(CartWidgetDocument, {count : newValue})
-        setCartCount(newValue);
-    }
-    const decrementCartCount = (count) => {
-        const CartWidgetDocument = doc(db,"cartwidget", "lS4hl9eFiCzpDj3aBgAa");
-        const newValue = cartCount + count;
-        updateDoc(CartWidgetDocument, {count : newValue})
-        setCartCount(newValue);
-    }
-    const removeItem = (itemId) => {
-        const cartUpdated = cart.filter(item => item.id !== itemId)
-        setCart(cartUpdated);
-        const CartWidgetDocument = doc(db,"cartwidget", "lS4hl9eFiCzpDj3aBgAa");
-        updateDoc(CartWidgetDocument, {count : cartUpdated.quantity})
-        setCartCount(cartUpdated.quantity);
-    }
+    };
 
-    const clearCart = () => {
-        setCart([]);
-    }
+    fetchCartCount();
+  }, []); // Fetch cart count on component mount
 
-    const isInCart = (itemId) =>{
-        return cart.some(item => item.id === itemId)
+  const addItem = (item, quantity) => {
+    if (!isInCart(item.id)) {
+      setCart((prev) => [...prev, { ...item, quantity }]);
+      updateCartCount(cartCount + quantity);
+    } else {
+      console.error('Item is already added');
     }
+  };
 
-    return (
-        <CartContext.Provider value = {{ cart, cartCount, CartWidgetCount, addItem, removeItem, clearCart}}>
-            {children}
-        </CartContext.Provider>
-    )
-}
+  const updateCartCount = (count) => {
+    const CartWidgetDocument = doc(db, 'cartwidget', 'lS4hl9eFiCzpDj3aBgAa');
+    updateDoc(CartWidgetDocument, { count });
+    setCartCount(count);
+  };
+
+  const removeItem = (itemId) => {
+    const cartUpdated = cart.filter((item) => item.id !== itemId);
+    setCart(cartUpdated);
+    const newCount = cartUpdated.reduce((acc, item) => acc + item.quantity, 0);
+    console.log(newCount);
+    updateCartCount(newCount);
+  };
+
+  const clearCart = () => {
+    setCart([]);
+    updateCartCount(0);
+  };
+
+  const isInCart = (itemId) => {
+    return cart.some((item) => item.id === itemId);
+  };
+
+  return (
+    <CartContext.Provider value={{ cart, cartCount, addItem, removeItem, clearCart }}>
+      {children}
+    </CartContext.Provider>
+  );
+};

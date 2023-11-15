@@ -1,10 +1,11 @@
-import React from 'react'
-import cart from './assets/cart.png'
+import React from 'react';
+import cart from './assets/cart.png';
 
-export default function CartWidget({count}) {
+export default function CartWidget({ count }) {
   return (
     <div>
-      <img src={cart}/>{count}
+      <img src={cart} alt="Cart" />
+      {count}
     </div>
-  )
+  );
 }
